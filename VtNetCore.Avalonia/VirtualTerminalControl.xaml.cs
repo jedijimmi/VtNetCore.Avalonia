@@ -752,14 +752,14 @@ namespace VtNetCore.Avalonia
             TextPosition cursorPosition = null;
             bool showCursor = false;
             IBrush cursorColor = Brushes.Green;
-
-            scrollBar.Maximum = Terminal.ViewPort.TopRow;
-            scrollBar.ViewportSize = Bounds.Height;
-
+      
             if (Terminal != null)
             {
                 lock (Terminal)
                 {
+                    scrollBar.Maximum = Terminal.ViewPort.TopRow;
+                    scrollBar.ViewportSize = Bounds.Height;
+
                     spans = Terminal.ViewPort.GetPageSpans(ViewTop, Rows, Columns, TextSelection);
                     showCursor = Terminal.CursorState.ShowCursor;
                     cursorPosition = new TextPosition(Terminal.ViewPort.CursorPosition.Column, Terminal.ViewPort.CursorPosition.Row - ViewTop + Terminal.ViewPort.TopRow);

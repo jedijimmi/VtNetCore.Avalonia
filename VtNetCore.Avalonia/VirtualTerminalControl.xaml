@@ -1,4 +1,5 @@
-﻿<Styles xmlns="https://github.com/avaloniaui" xmlns:local="clr-namespace:VtNetCore.Avalonia;assembly=VtNetCore.Avalonia">
+﻿<Styles xmlns="https://github.com/avaloniaui" 
+        xmlns:local="clr-namespace:VtNetCore.Avalonia;assembly=VtNetCore.Avalonia">
     <Style Selector="local|VirtualTerminalControl">
         <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}"/>
