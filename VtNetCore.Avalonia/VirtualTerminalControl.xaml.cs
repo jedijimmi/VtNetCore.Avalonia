@@ -587,7 +587,7 @@ namespace VtNetCore.Avalonia
 
         public IBrush GetSolidColorBrush(string hex)
         {
-            if (hex == "#0C0C0C" || hex == "#7F7F7F") return this.Background;
+            if (hex == "#0C0C0C") return this.Background;
             else if (hex == "#CCCCCC" || hex == "#FFFFFF") return this.Foreground;
             byte a = 255; // (byte)(Convert.ToUInt32(hex.Substring(0, 2), 16));
             byte r = (byte)(Convert.ToUInt32(hex.Substring(1, 2), 16));
