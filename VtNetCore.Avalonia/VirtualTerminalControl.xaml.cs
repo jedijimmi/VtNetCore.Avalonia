@@ -208,9 +208,9 @@ namespace VtNetCore.Avalonia
             });
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnTemplateApplied(e);
+            base.OnApplyTemplate(e);
             scrollBar = e.NameScope.Find<ScrollBar>("ScrollBar");
 
             scrollBar.Scroll += (o, i) =>
