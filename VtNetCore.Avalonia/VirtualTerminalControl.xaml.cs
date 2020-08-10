@@ -242,7 +242,7 @@ namespace VtNetCore.Avalonia
 
         public Thickness TextPadding
         {
-            get => GetValue(TextPaddingProperty);
+            get => (Thickness)GetValue(TextPaddingProperty);
             set => SetValue(TextPaddingProperty, value);
         }
 
@@ -743,7 +743,7 @@ namespace VtNetCore.Avalonia
         public override void Render(DrawingContext context)
         {
             var textFormat =
-                new Typeface(FontFamily, FontWeight, FontStyle);            
+                new Typeface(FontFamily, FontStyle, FontWeight);            
 
             ProcessTextFormat(context, textFormat);
 
@@ -785,7 +785,7 @@ namespace VtNetCore.Avalonia
 
         private void AnnotateView(DrawingContext context)
         {
-            var lineNumberFormat = new Typeface(FontFamily, FontWeight, FontStyle);
+            var lineNumberFormat = new Typeface(FontFamily, FontStyle, FontWeight);
 
             for (var i = 0; i < Rows; i++)
             {
@@ -876,7 +876,8 @@ namespace VtNetCore.Avalonia
             {
                 Text = "\u2560",
                 Typeface = format,
-                Wrapping = TextWrapping.NoWrap,
+                TextWrapping = TextWrapping.NoWrap,
+                FontSize = FontSize
             };
 
             var size = textLayout.Bounds;
