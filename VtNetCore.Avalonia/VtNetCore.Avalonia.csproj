@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <AvaloniaVersion>0.10.0-rc1</AvaloniaVersion>
+    <AvaloniaVersion>0.10.0-rc2</AvaloniaVersion>
   </PropertyGroup>
   
   <ItemGroup>
