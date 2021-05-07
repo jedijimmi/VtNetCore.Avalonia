@@ -3,10 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <AvaloniaVersion>0.10.0</AvaloniaVersion>
-  </PropertyGroup>
   
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
