@@ -1,3 +1,4 @@
 [submodule "VtNetCore"]
 	path = VtNetCore
 	url = https://github.com/VitalElement/VtNetCore
+	branch = master
