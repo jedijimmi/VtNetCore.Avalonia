@@ -218,6 +218,16 @@ namespace VtNetCore.Avalonia
             {
                 SetScroll((int)i.NewValue);
             };
+
+            this.EffectiveViewportChanged += (o, i) => SetScrollWindow();
+            SetScrollWindow();
+        }
+
+        private void SetScrollWindow()
+        {
+            if(Terminal != null)
+                scrollBar.Maximum = Terminal.ViewPort.TopRow;
+            scrollBar.ViewportSize = Bounds.Height;
         }
 
         public static readonly StyledProperty<IConnection> ConnectionProperty =
@@ -582,6 +592,8 @@ namespace VtNetCore.Avalonia
 
                 _rawTextChanged = true;
             }
+
+            SetScrollWindow();
         }
 
         private bool BlinkVisible()
@@ -762,9 +774,6 @@ namespace VtNetCore.Avalonia
             {
                 lock (Terminal)
                 {
-                    scrollBar.Maximum = Terminal.ViewPort.TopRow;
-                    scrollBar.ViewportSize = Bounds.Height;
-
                     spans = Terminal.ViewPort.GetPageSpans(ViewTop, Rows, Columns, TextSelection);
                     showCursor = Terminal.CursorState.ShowCursor;
                     cursorPosition = new TextPosition(Terminal.ViewPort.CursorPosition.Column, Terminal.ViewPort.CursorPosition.Row - ViewTop + Terminal.ViewPort.TopRow);
