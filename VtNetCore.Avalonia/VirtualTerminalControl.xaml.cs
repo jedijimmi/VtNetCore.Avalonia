@@ -225,9 +225,11 @@ namespace VtNetCore.Avalonia
 
         private void SetScrollWindow()
         {
-            if(Terminal != null)
+            if (Terminal != null && scrollBar != null)
+            {
                 scrollBar.Maximum = Terminal.ViewPort.TopRow;
-            scrollBar.ViewportSize = Bounds.Height;
+                scrollBar.ViewportSize = Bounds.Height;
+            }
         }
 
         public static readonly StyledProperty<IConnection> ConnectionProperty =
