@@ -609,9 +609,15 @@ namespace VtNetCore.Avalonia
         {
             if (hex == "#0C0C0C") return this.Background;
             else if (hex == "#CCCCCC" || hex == "#FFFFFF") return this.Foreground;
-            
-            var multiplier = 0.5;
-            byte a = 255; // (byte)(Convert.ToUInt32(hex.Substring(0, 2), 16));
+
+            var multiplier = 1.0f;
+            if (Foreground is SolidColorBrush foregroundBrush)
+            {
+                if (foregroundBrush.Color.R < 100 && foregroundBrush.Color.G < 100 && foregroundBrush.Color.B < 100)
+                    multiplier = 0.5f;
+            }
+
+            byte a = 255; 
             byte r = (byte)(Convert.ToUInt32(hex.Substring(1, 2), 16) * multiplier);
             byte g = (byte)(Convert.ToUInt32(hex.Substring(3, 2), 16) * multiplier);
             byte b = (byte)(Convert.ToUInt32(hex.Substring(5, 2), 16) * multiplier);
