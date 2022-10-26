@@ -604,23 +604,39 @@ namespace VtNetCore.Avalonia
 
             return (DateTime.Now.Subtract(DateTime.MinValue).Milliseconds % blinkCycle) < BlinkHideMs;
         }
-
+        
         public IBrush GetSolidColorBrush(string hex)
         {
             if (hex == "#0C0C0C") return this.Background;
             else if (hex == "#CCCCCC" || hex == "#FFFFFF") return this.Foreground;
-
-            var multiplier = 1.0f;
+            
+            var lightMode = false;
             if (Foreground is SolidColorBrush foregroundBrush)
             {
                 if (foregroundBrush.Color.R < 100 && foregroundBrush.Color.G < 100 && foregroundBrush.Color.B < 100)
-                    multiplier = 0.5f;
+                    lightMode = true;
             }
 
             byte a = 255; 
-            byte r = (byte)(Convert.ToUInt32(hex.Substring(1, 2), 16) * multiplier);
-            byte g = (byte)(Convert.ToUInt32(hex.Substring(3, 2), 16) * multiplier);
-            byte b = (byte)(Convert.ToUInt32(hex.Substring(5, 2), 16) * multiplier);
+            byte r = (byte)Convert.ToUInt32(hex.Substring(1, 2), 16);
+            byte g = (byte)Convert.ToUInt32(hex.Substring(3, 2), 16);
+            byte b = (byte)(Convert.ToUInt32(hex.Substring(5, 2), 16));
+
+            if (lightMode)
+            {
+                const byte colorMax = 150;
+                if (r > colorMax) r = colorMax;
+                if (g > colorMax) g = colorMax;
+                if (b > colorMax) b = colorMax;
+            }
+            else
+            {
+                const byte colorMin = 100;
+                if (r < colorMin) r = colorMin;
+                if (g < colorMin) g = colorMin;
+                if (b < colorMin) b = colorMin;
+            }
+            
             return new SolidColorBrush(Color.FromArgb(a, r, g, b));
         }
 
