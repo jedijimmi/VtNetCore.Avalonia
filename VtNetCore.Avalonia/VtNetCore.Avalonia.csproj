@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
   
   <ItemGroup>
@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia" Version="0.10.18" />
   </ItemGroup>
 
   <ItemGroup>

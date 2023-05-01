@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+    <TargetFrameworks>net7.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
@@ -18,9 +18,9 @@
     <None Remove="Models\**" />
   </ItemGroup>  
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.9.10" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.9.10" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.10" />
+    <PackageReference Include="Avalonia" Version="0.10.18" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\VtNetCore.Avalonia\VtNetCore.Avalonia.csproj" />
