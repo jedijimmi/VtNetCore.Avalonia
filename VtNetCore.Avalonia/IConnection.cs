@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Input;
 
 namespace VtNetCore.Avalonia
 {
@@ -25,6 +26,8 @@ namespace VtNetCore.Avalonia
         void Disconnect();
 
         void SendData(byte[] data);
+
+        void KeyPressed(Key key, char c, KeyModifiers modifiers);
 
         void SetTerminalWindowSize(int columns, int rows, int width, int height);
     }

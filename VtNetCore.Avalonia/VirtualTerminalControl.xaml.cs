@@ -282,7 +282,28 @@ namespace VtNetCore.Avalonia
             // I lookup whether KeyPressed should handle the key here or there.
             var code = Terminal.GetKeySequence(ch, false, false);
             if (code == null)
+            {
                 e.Handled = Terminal.KeyPressed(ch, false, false);
+
+                KeyModifiers Modifiers = KeyModifiers.None;
+                // if (e.Device.Modifiers.HasFlag(RawInputModifiers.Alt))
+                // {
+                //     Modifiers |= KeyModifiers.Alt;
+                // }
+                // if (e.Device.Modifiers.HasFlag(RawInputModifiers.Shift))
+                // {
+                //     Modifiers |= KeyModifiers.Shift;
+                // }
+                // if (e.Device.Modifiers.HasFlag(RawInputModifiers.Control))
+                // {
+                //     Modifiers |= KeyModifiers.Control;
+                // }
+
+                foreach(var c in ch)
+                {
+                    Connection.KeyPressed(Key.None, c, Modifiers);
+                }
+            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -316,7 +337,10 @@ namespace VtNetCore.Avalonia
             // I lookup whether KeyPressed should handle the key here or there.
             var code = Terminal.GetKeySequence(e.Key.ToString(), controlPressed, shiftPressed);
             if (code != null)
+            {
                 e.Handled = Terminal.KeyPressed(e.Key.ToString(), controlPressed, shiftPressed);
+                Connection.KeyPressed(e.Key, '\0', e.KeyModifiers);
+            }
 
             if (ViewTop != Terminal.ViewPort.TopRow)
             {
