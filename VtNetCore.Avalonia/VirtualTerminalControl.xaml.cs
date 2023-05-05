@@ -143,7 +143,7 @@ namespace VtNetCore.Avalonia
             blinkDispatcher = new DispatcherTimer();
             blinkDispatcher.Tick += (sender, e) => InvalidateVisual();
             blinkDispatcher.Interval = TimeSpan.FromMilliseconds(GCD(BlinkShowMs, BlinkHideMs));
-            //blinkDispatcher.Start();
+            blinkDispatcher.Start();
 
             this.GetObservable(TerminalProperty)
                 .ObserveOn(AvaloniaScheduler.Instance)
@@ -285,26 +285,17 @@ namespace VtNetCore.Avalonia
             {
                 e.Handled = Terminal.KeyPressed(ch, false, false);
 
-                KeyModifiers Modifiers = KeyModifiers.None;
-                // if (e.Device.Modifiers.HasFlag(RawInputModifiers.Alt))
-                // {
-                //     Modifiers |= KeyModifiers.Alt;
-                // }
-                // if (e.Device.Modifiers.HasFlag(RawInputModifiers.Shift))
-                // {
-                //     Modifiers |= KeyModifiers.Shift;
-                // }
-                // if (e.Device.Modifiers.HasFlag(RawInputModifiers.Control))
-                // {
-                //     Modifiers |= KeyModifiers.Control;
-                // }
-
                 foreach(var c in ch)
                 {
-                    Connection.KeyPressed(Key.None, c, Modifiers);
+                    Connection.KeyPressed(LatestKey, c, LatestKeyModifiers);
                 }
+                LatestKey = Key.None;
+                LatestKeyModifiers = KeyModifiers.None;
             }
         }
+
+        private Key LatestKey;
+        private KeyModifiers LatestKeyModifiers;
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
@@ -340,6 +331,11 @@ namespace VtNetCore.Avalonia
             {
                 e.Handled = Terminal.KeyPressed(e.Key.ToString(), controlPressed, shiftPressed);
                 Connection.KeyPressed(e.Key, '\0', e.KeyModifiers);
+            }
+            else
+            {
+                LatestKey = e.Key;
+                LatestKeyModifiers = e.KeyModifiers;
             }
 
             if (ViewTop != Terminal.ViewPort.TopRow)
@@ -724,8 +720,13 @@ namespace VtNetCore.Avalonia
             }
         }
 
-        private void PaintCursor(DrawingContext context, List<VirtualTerminal.Layout.LayoutRow> spans, Typeface textFormat, TextPosition cursorPosition, IBrush cursorColor)
+        private void PaintCursor(DrawingContext context, List<VirtualTerminal.Layout.LayoutRow> spans, Typeface textFormat, TextPosition cursorPosition, IBrush cursorColor, bool showBlink)
         {
+            if (showBlink)
+            {
+                return;
+            }
+    
             var cursorY = cursorPosition.Row;
 
             if (cursorY >= 0 && spans != null && cursorY < spans.Count)
@@ -747,18 +748,18 @@ namespace VtNetCore.Avalonia
 
                     var cursorRect = new Rect(
                         drawX + TextPadding.Left,
-                        drawY + TextPadding.Top,
+                        drawY + TextPadding.Top + CharacterHeight - 2.0,
                         CharacterWidth,
-                        CharacterHeight + 0.9
+                        2.0
                     );
 
                     if (IsFocused)
                     {
                         context.FillRectangle(cursorColor, cursorRect);
                     }
-                    else
+                    // else
                     {
-                        context.DrawRectangle(new Pen(cursorColor), cursorRect);
+                        // context.DrawRectangle(new Pen(cursorColor), cursorRect);
                     }
                 }
             }
@@ -798,7 +799,7 @@ namespace VtNetCore.Avalonia
 
             if (showCursor)
             {
-                PaintCursor(context, spans, textFormat, cursorPosition, cursorColor);
+                PaintCursor(context, spans, textFormat, cursorPosition, cursorColor, showBlink);
             }
 
             if (ViewDebugging)
