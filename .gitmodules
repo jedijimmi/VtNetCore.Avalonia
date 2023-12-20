@@ -1,4 +1,4 @@
 [submodule "VtNetCore"]
 	path = VtNetCore
-	url = git@github.com:jedijimmi/VtNetCore.git
+	url = https://github.com/jedijimmi/VtNetCore
 	branch = master
