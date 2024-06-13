@@ -798,8 +798,11 @@ namespace VtNetCore.Avalonia
             {
                 lock (Terminal)
                 {
-                    scrollBar.Maximum = Terminal.ViewPort.TopRow;
-                    scrollBar.ViewportSize = Bounds.Height;
+                    if (scrollBar != null)
+                    {
+                        scrollBar.Maximum = Terminal.ViewPort.TopRow;
+                        scrollBar.ViewportSize = Bounds.Height;
+                    }
 
                     spans = Terminal.ViewPort.GetPageSpans(ViewTop, Rows, Columns, TextSelection);
                     showCursor = Terminal.CursorState.ShowCursor;
