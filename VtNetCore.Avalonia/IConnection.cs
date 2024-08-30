@@ -15,15 +15,7 @@ namespace VtNetCore.Avalonia
 
     public interface IConnection
     {
-        bool IsConnected { get; }
-
         event EventHandler<DataReceivedEventArgs> DataReceived;
-
-        event EventHandler<EventArgs> Closed;
-
-        bool Connect();
-
-        void Disconnect();
 
         void SendData(byte[] data);
 

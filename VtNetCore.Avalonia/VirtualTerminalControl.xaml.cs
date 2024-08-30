@@ -11,9 +11,7 @@ using System.Globalization;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Avalonia.ReactiveUI;
-using Avalonia.Remote.Protocol.Input;
 using VtNetCore.VirtualTerminal;
 using VtNetCore.VirtualTerminal.Model;
 using VtNetCore.XTermParser;
@@ -72,24 +70,24 @@ namespace VtNetCore.Avalonia
             Color.FromArgb(255,255,255,255),  // Bright white
         };
 
-        private static SolidColorBrush[] AttributeBrushes =
+        private static readonly SolidColorBrush[] AttributeBrushes =
         {
-            new SolidColorBrush(AttributeColors[0]),
-            new SolidColorBrush(AttributeColors[1]),
-            new SolidColorBrush(AttributeColors[2]),
-            new SolidColorBrush(AttributeColors[3]),
-            new SolidColorBrush(AttributeColors[4]),
-            new SolidColorBrush(AttributeColors[5]),
-            new SolidColorBrush(AttributeColors[6]),
-            new SolidColorBrush(AttributeColors[7]),
-            new SolidColorBrush(AttributeColors[8]),
-            new SolidColorBrush(AttributeColors[9]),
-            new SolidColorBrush(AttributeColors[10]),
-            new SolidColorBrush(AttributeColors[11]),
-            new SolidColorBrush(AttributeColors[12]),
-            new SolidColorBrush(AttributeColors[13]),
-            new SolidColorBrush(AttributeColors[14]),
-            new SolidColorBrush(AttributeColors[15]),
+            new(AttributeColors[0]),
+            new(AttributeColors[1]),
+            new(AttributeColors[2]),
+            new(AttributeColors[3]),
+            new(AttributeColors[4]),
+            new(AttributeColors[5]),
+            new(AttributeColors[6]),
+            new(AttributeColors[7]),
+            new(AttributeColors[8]),
+            new(AttributeColors[9]),
+            new(AttributeColors[10]),
+            new(AttributeColors[11]),
+            new(AttributeColors[12]),
+            new(AttributeColors[13]),
+            new(AttributeColors[14]),
+            new(AttributeColors[15]),
         };
 
         public double CharacterWidth { get; private set; } = -1;
@@ -303,9 +301,6 @@ namespace VtNetCore.Avalonia
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (!Connected)
-                return;
-
             var controlPressed = e.KeyModifiers.HasFlag(KeyModifiers.Control);
             var shiftPressed = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
 
@@ -408,7 +403,7 @@ namespace VtNetCore.Avalonia
             var textPosition = position.OffsetBy(0, ViewTop);
             var properties = e.GetCurrentPoint(this).Properties;
 
-            if (Connected && (Terminal.UseAllMouseTracking || Terminal.CellMotionMouseTracking) && position.Column >= 0 && position.Row >= 0 && position.Column < Columns && position.Row < Rows)
+            if ((Terminal.UseAllMouseTracking || Terminal.CellMotionMouseTracking) && position.Column >= 0 && position.Row >= 0 && position.Column < Columns && position.Row < Rows)
             {
                 var controlPressed = e.KeyModifiers.HasFlag(KeyModifiers.Control);
                 var shiftPressed = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
@@ -489,7 +484,7 @@ namespace VtNetCore.Avalonia
             var textPosition = position.OffsetBy(0, ViewTop);
             var properties = e.GetCurrentPoint(this).Properties;
 
-            if (!Connected || (Connected && !Terminal.X10SendMouseXYOnButton && !Terminal.X11SendMouseXYOnButton && !Terminal.SgrMouseMode && !Terminal.CellMotionMouseTracking && !Terminal.UseAllMouseTracking))
+            if ((!Terminal.X10SendMouseXYOnButton && !Terminal.X11SendMouseXYOnButton && !Terminal.SgrMouseMode && !Terminal.CellMotionMouseTracking && !Terminal.UseAllMouseTracking))
             {
                 if (properties.IsLeftButtonPressed)
                     MousePressedAt = textPosition;
@@ -497,7 +492,7 @@ namespace VtNetCore.Avalonia
                     PasteClipboard();
             }
 
-            if (Connected && position.Column >= 0 && position.Row >= 0 && position.Column < Columns && position.Row < Rows)
+            if (position.Column >= 0 && position.Row >= 0 && position.Column < Columns && position.Row < Rows)
             {
                 var controlPressed = e.KeyModifiers.HasFlag(KeyModifiers.Control);
                 var shiftPressed = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
@@ -539,7 +534,7 @@ namespace VtNetCore.Avalonia
                 }
             }
 
-            if (Connected && position.Column >= 0 && position.Row >= 0 && position.Column < Columns && position.Row < Rows)
+            if (position.Column >= 0 && position.Row >= 0 && position.Column < Columns && position.Row < Rows)
             {
                 var controlPressed = e.KeyModifiers.HasFlag(KeyModifiers.Control);
                 var shiftPressed = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
@@ -550,20 +545,7 @@ namespace VtNetCore.Avalonia
 
         private void OnSendData(SendDataEventArgs e)
         {
-            if (!Connected)
-                return;
-
-            var connection = Connection;
-
-            Task.Run(() =>
-            {
-                connection.SendData(e.Data);
-            });
-        }
-
-        public bool Connected
-        {
-            get { return Connection != null && Connection.IsConnected; }
+            Connection.SendData(e.Data);
         }
 
         private void OnDataReceived(DataReceivedEventArgs e)
@@ -1002,12 +984,7 @@ namespace VtNetCore.Avalonia
 
             var buffer = Encoding.UTF8.GetBytes(text);
 
-            var connection = Connection;
-
-            Task.Run(() =>
-            {
-                connection.SendData(buffer);
-            });
+            Connection.SendData(buffer);
         }
 
         private async void PasteClipboard()
