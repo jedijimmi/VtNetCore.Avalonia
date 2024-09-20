@@ -615,7 +615,7 @@ namespace VtNetCore.Avalonia
             double lineY = 0;
             foreach (var textRow in spans)
             {
-                using (context.PushPreTransform(Matrix.CreateScale(
+                using (context.PushTransform(Matrix.CreateScale(
                         (textRow.DoubleWidth ? 2.0 : 1.0),  // Scale double width
                         (textRow.DoubleHeightBottom | textRow.DoubleHeightTop ? 2.0 : 1.0) // Scale double high
                     )))
@@ -659,7 +659,7 @@ namespace VtNetCore.Avalonia
             double lineY = 0;
             foreach (var textRow in spans)
             {
-                using (context.PushPreTransform(Matrix.CreateScale(
+                using (context.PushTransform(Matrix.CreateScale(
                         (textRow.DoubleWidth ? 2.0 : 1.0),  // Scale double width
                         (textRow.DoubleHeightBottom | textRow.DoubleHeightTop ? 2.0 : 1.0) // Scale double high
                     )))
@@ -730,7 +730,7 @@ namespace VtNetCore.Avalonia
             {
                 var textRow = spans[cursorY];
 
-                using (context.PushPreTransform(Matrix.CreateTranslation(
+                using (context.PushTransform(Matrix.CreateTranslation(
                         1.0f,
                         (textRow.DoubleHeightBottom ? -CharacterHeight : 0)
                     ) *
