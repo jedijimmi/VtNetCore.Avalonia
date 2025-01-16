@@ -13,7 +13,7 @@ namespace VtNetCore.Avalonia
         }
     }
 
-    public interface IConnection
+    public interface ITerminalConnection
     {
         event EventHandler<DataReceivedEventArgs> DataReceived;
 

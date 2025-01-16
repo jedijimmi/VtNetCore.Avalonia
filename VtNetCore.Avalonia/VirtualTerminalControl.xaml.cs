@@ -221,10 +221,10 @@ namespace VtNetCore.Avalonia
             };
         }
 
-        public static readonly StyledProperty<IConnection> ConnectionProperty =
-            AvaloniaProperty.Register<VirtualTerminalControl, IConnection>(nameof(Connection));
+        public static readonly StyledProperty<ITerminalConnection> ConnectionProperty =
+            AvaloniaProperty.Register<VirtualTerminalControl, ITerminalConnection>(nameof(Connection));
 
-        public IConnection Connection
+        public ITerminalConnection Connection
         {
             get { return GetValue(ConnectionProperty); }
             set { SetValue(ConnectionProperty, value); }
