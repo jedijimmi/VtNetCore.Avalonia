@@ -11,6 +11,7 @@ using System.Globalization;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Avalonia.ReactiveUI;
 using VtNetCore.VirtualTerminal;
 using VtNetCore.VirtualTerminal.Model;
@@ -26,8 +27,6 @@ namespace VtNetCore.Avalonia
 
         private int BlinkShowMs { get; set; } = 600;
         private int BlinkHideMs { get; set; } = 300;
-
-        private string InputBuffer { get; set; } = "";
 
         DispatcherTimer blinkDispatcher;
 
@@ -115,7 +114,6 @@ namespace VtNetCore.Avalonia
         private int _rawTextLength = 0;
         private string _rawTextString = "";
         private bool _rawTextChanged = false;
-        public DateTime TerminalIdleSince = DateTime.Now;
 
         public string RawText
         {
@@ -134,13 +132,10 @@ namespace VtNetCore.Avalonia
             }
         }
 
-        static VirtualTerminalControl()
-        {
-            AffectsRender<VirtualTerminalControl>(ConnectionProperty);
-        }
-
         public VirtualTerminalControl()
         {
+            AffectsRender<VirtualTerminalControl>(ConnectionProperty);
+
             blinkDispatcher = new DispatcherTimer();
             blinkDispatcher.Tick += (sender, e) => InvalidateVisual();
             blinkDispatcher.Interval = TimeSpan.FromMilliseconds(GCD(BlinkShowMs, BlinkHideMs));
@@ -159,8 +154,7 @@ namespace VtNetCore.Avalonia
 
                     Columns = -1;
                     Rows = -1;
-                    InputBuffer = "";
-                    TerminalIdleSince = DateTime.Now;
+
                     _rawTextChanged = false;
                     _rawTextString = "";
                     _rawTextLength = 0;
@@ -173,10 +167,9 @@ namespace VtNetCore.Avalonia
                     {
                         _terminalDisposables = new CompositeDisposable();
                         Consumer = new DataConsumer(terminal);
-
                         _terminalDisposables.Add(
                             Observable.FromEventPattern<SendDataEventArgs>(terminal, nameof(terminal.SendData)).Subscribe(e => OnSendData(e.EventArgs)));
-                        
+
                         _terminalDisposables.Add(
                             Observable.FromEventPattern<TextEventArgs>(terminal, nameof(terminal.WindowTitleChanged))
                             .ObserveOn(AvaloniaScheduler.Instance)
@@ -286,13 +279,6 @@ namespace VtNetCore.Avalonia
             if (code == null)
             {
                 e.Handled = Terminal.KeyPressed(ch, false, false);
-
-                foreach(var c in ch)
-                {
-                    Connection.KeyPressed(LatestKey, c, LatestKeyModifiers);
-                }
-                LatestKey = Key.None;
-                LatestKeyModifiers = KeyModifiers.None;
             }
         }
 
@@ -301,6 +287,9 @@ namespace VtNetCore.Avalonia
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            if (!Connected)
+                return;
+
             var controlPressed = e.KeyModifiers.HasFlag(KeyModifiers.Control);
             var shiftPressed = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
 
@@ -323,18 +312,22 @@ namespace VtNetCore.Avalonia
                 }
             }
 
-            // Since I get the same key twice in TerminalKeyDown and in CoreWindow_CharacterReceived
-            // I lookup whether KeyPressed should handle the key here or there.
-            var code = Terminal.GetKeySequence(e.Key.ToString(), controlPressed, shiftPressed);
-            if (code != null)
+            if (controlPressed && shiftPressed && e.Key == Key.V)
             {
-                e.Handled = Terminal.KeyPressed(e.Key.ToString(), controlPressed, shiftPressed);
-                Connection.KeyPressed(e.Key, '\0', e.KeyModifiers);
+                PasteClipboard();
             }
             else
             {
-                LatestKey = e.Key;
-                LatestKeyModifiers = e.KeyModifiers;
+                var code = Terminal.GetKeySequence(e.Key.ToString(), controlPressed, shiftPressed);
+                if (code != null)
+                {
+                    e.Handled = Terminal.KeyPressed(e.Key.ToString(), controlPressed, shiftPressed);
+                }
+                else
+                {
+                    LatestKey = e.Key;
+                    LatestKeyModifiers = e.KeyModifiers;
+                }
             }
 
             if (ViewTop != Terminal.ViewPort.TopRow)
@@ -484,7 +477,7 @@ namespace VtNetCore.Avalonia
             var textPosition = position.OffsetBy(0, ViewTop);
             var properties = e.GetCurrentPoint(this).Properties;
 
-            if ((!Terminal.X10SendMouseXYOnButton && !Terminal.X11SendMouseXYOnButton && !Terminal.SgrMouseMode && !Terminal.CellMotionMouseTracking && !Terminal.UseAllMouseTracking))
+            if (!Connected || (Connected && !Terminal.X10SendMouseXYOnButton && !Terminal.X11SendMouseXYOnButton && !Terminal.SgrMouseMode && !Terminal.CellMotionMouseTracking && !Terminal.UseAllMouseTracking))
             {
                 if (properties.IsLeftButtonPressed)
                     MousePressedAt = textPosition;
@@ -492,7 +485,7 @@ namespace VtNetCore.Avalonia
                     PasteClipboard();
             }
 
-            if (position.Column >= 0 && position.Row >= 0 && position.Column < Columns && position.Row < Rows)
+            if (Connected && position.Column >= 0 && position.Row >= 0 && position.Column < Columns && position.Row < Rows)
             {
                 var controlPressed = e.KeyModifiers.HasFlag(KeyModifiers.Control);
                 var shiftPressed = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
@@ -534,7 +527,7 @@ namespace VtNetCore.Avalonia
                 }
             }
 
-            if (position.Column >= 0 && position.Row >= 0 && position.Column < Columns && position.Row < Rows)
+            if (Connected && position.Column >= 0 && position.Row >= 0 && position.Column < Columns && position.Row < Rows)
             {
                 var controlPressed = e.KeyModifiers.HasFlag(KeyModifiers.Control);
                 var shiftPressed = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
@@ -542,11 +535,20 @@ namespace VtNetCore.Avalonia
                 Terminal.MouseRelease(position.Column, position.Row, controlPressed, shiftPressed);
             }
         }
-
         private void OnSendData(SendDataEventArgs e)
         {
-            Connection.SendData(e.Data);
+            if (!Connected)
+                return;
+
+            var connection = Connection;
+
+            Task.Run(() =>
+            {
+                connection.SendData(e.Data);
+            });
         }
+
+        public bool Connected => Connection is { IsConnected: true };
 
         private void OnDataReceived(DataReceivedEventArgs e)
         {
@@ -566,8 +568,6 @@ namespace VtNetCore.Avalonia
 
                     InvalidateVisual();
                 }
-
-                TerminalIdleSince = DateTime.Now;
             }
         }
 
@@ -939,17 +939,22 @@ namespace VtNetCore.Avalonia
                 CharacterHeight = textLayout.Height;
             }
 
-            int columns = Convert.ToInt32(Math.Floor((Bounds.Size.Width - TextPadding.Left - TextPadding.Right) / CharacterWidth));
-            int rows = Convert.ToInt32(Math.Floor((Bounds.Size.Height - TextPadding.Top - TextPadding.Bottom) / CharacterHeight));
-            if (Columns != columns || Rows != rows)
+            var columns = 120;
+            var rows = 40;
+            if (Bounds.Width != 0 && Bounds.Height != 0)
             {
-                Columns = columns;
-                Rows = rows;
-                ResizeTerminal();
-
-                if (Connection != null)
-                    Connection.SetTerminalWindowSize(columns, rows, (int)Bounds.Width, (int)Bounds.Height);
+                // Only update columns and rows if we have a size
+                columns = Convert.ToInt32(Math.Floor((Bounds.Size.Width - TextPadding.Left - TextPadding.Right) / CharacterWidth));
+                rows = Convert.ToInt32(Math.Floor((Bounds.Size.Height - TextPadding.Top - TextPadding.Bottom) / CharacterHeight));
             }
+
+            if (Columns == columns && Rows == rows) return;
+    
+            Columns = columns;
+            Rows = rows;
+            ResizeTerminal();
+
+            Connection?.SetTerminalWindowSize(columns, rows, (int)Bounds.Width, (int)Bounds.Height);
         }
 
         private void ResizeTerminal()
@@ -979,19 +984,18 @@ namespace VtNetCore.Avalonia
 
         private void PasteText(string text)
         {
-            if (Connection == null)
-                return;
-
-            var buffer = Encoding.UTF8.GetBytes(text);
-
-            Connection.SendData(buffer);
+            // var buffer = Encoding.UTF8.GetBytes(text);
+            // OnDataReceived(new DataReceivedEventArgs
+            // {
+                // Data = buffer,
+            // });
         }
 
-        private async void PasteClipboard()
+        public async void PasteClipboard()
         {
-            var topLevel = TopLevel.GetTopLevel(this);
-            if (topLevel?.Clipboard == null) return;
-            var text = await topLevel.Clipboard.GetTextAsync();
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard == null) return;
+            var text = await clipboard.GetTextAsync();
 
             if (!string.IsNullOrEmpty(text))
             {

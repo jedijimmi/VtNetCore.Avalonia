@@ -15,12 +15,12 @@ namespace VtNetCore.Avalonia
 
     public interface ITerminalConnection
     {
+        bool IsConnected { get; }
         event EventHandler<DataReceivedEventArgs> DataReceived;
-
+        event EventHandler<EventArgs> Closed;
+        bool Connect();
+        void Disconnect();
         void SendData(byte[] data);
-
-        void KeyPressed(Key key, char c, KeyModifiers modifiers);
-
         void SetTerminalWindowSize(int columns, int rows, int width, int height);
     }
 }
