@@ -982,25 +982,22 @@ namespace VtNetCore.Avalonia
 
         public TextPosition MousePressedAt { get; set; }
 
-        private void PasteText(string text)
+        private void PasteClipboard()
         {
-            // var buffer = Encoding.UTF8.GetBytes(text);
-            // OnDataReceived(new DataReceivedEventArgs
-            // {
-                // Data = buffer,
-            // });
-        }
-
-        public async void PasteClipboard()
-        {
-            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-            if (clipboard == null) return;
-            var text = await clipboard.GetTextAsync();
-
-            if (!string.IsNullOrEmpty(text))
+            if (!Connected)
+                return;
+            var connection = Connection;
+            Task.Run(async () =>
             {
-                PasteText(text);
-            }
+                var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (clipboard == null) return;
+                var text = await clipboard.GetTextAsync();
+
+                if (!string.IsNullOrEmpty(text))
+                {
+                    connection.SendData(Encoding.UTF8.GetBytes(text));
+                }
+            });
         }
     }
 }
